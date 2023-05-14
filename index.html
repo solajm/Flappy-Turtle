@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Flappy Turtle</title>
+  <style>
+    canvas {
+      border: 1px solid #000;
+      background: #f8f8f8;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .game-over {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 30px;
+      font-family: Arial, sans-serif;
+      color: red;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="gameCanvas" width="288" height="512"></canvas>
+  <div id="gameOverScreen" class="game-over">
+
+    <script>
+      // Create the game canvas and context
+      var canvas = document.getElementById("gameCanvas");
+      var ctx = canvas.getContext("2d");
+  
+      // Load the images
+      var turtle = new Image();
+      var bg = new Image();
+      var fg = new Image();
+      var pipeNorth = new Image();
+      var pipeSouth = new Image();
+  
+      turtle.src = "images/turtle.png";
+      bg.src = "images/bg.png";
+      fg.src = "images/fg.png";
+      pipeNorth.src = "images/pipeNorth.png";
+      pipeSouth.src = "images/pipeSouth.png";
+  
+      // Load the sounds
+      var flySound = new Audio();
+      var scoreSound = new Audio();
+      var gameOverSound = new Audio();
+  
+      flySound.src = "sounds/fly.mp3";
+      scoreSound.src = "sounds/score.mp3";
+      gameOverSound.src = "sounds/gameover.mp3";
+  
+      // Game variables
+      var score = 0;
+      var gravity = 1;
+      var gap = 85;
+      var constant;
+  
+      var bX = 10;
+      var bY = 150;
+  
+      var pipe = [];
+      pipe[0] = {
+          x: canvas.width,
+          y: 0
+      };
+  
+      var gameOverScreen = false; // Track game over state
+  
+      // Handle key presses
+      document.addEventListener("keydown", moveUp);
+  
+      function moveUp(event) {
+          if (event.keyCode === 32) {
+              bY -= 25;
+              flySound.play();
+          }
+      }
+  
+      // Draw the game
+      function draw() {
+          ctx.drawImage(bg, 0, 0);
+  
+          for (var i = 0; i < pipe.length; i++) {
+              constant = pipeNorth.height + gap;
+              ctx.drawImage(pipeNorth, pipe[i].x, pipe[i].y);
+              ctx.drawImage(pipeSouth, pipe[i].x, pipe[i].y + constant);
+              pipe[i].x--;
+  
+              if (pipe[i].x === 125) {
+                  pipe.push({
+                      x: canvas.width,
+                      y: Math.floor(Math.random() * pipeNorth.height) - pipeNorth.height
+                  });
+              }
+  
+              // Check for collision
+              if (
+                  (bX + turtle.width >= pipe[i].x &&
+                      bX <= pipe[i].x + pipeNorth.width &&
+                      (bY <= pipe[i].y + pipeNorth.height ||
+                          bY + turtle.height >= pipe[i].y + constant)) ||
+                  bY + turtle.height >= canvas.height - fg.height
+              ) {
+                  gameOverSound.play();
+                  gameOver();
+                  return;
+              }
+  
+              // Update score if turtle passes the pipe
+              if (pipe[i].x === 5) {
+                  score++;
+                  scoreSound.play();
+              }
+          }
+  
+          ctx.drawImage(fg, 0, canvas.height - fg.height);
+          ctx.drawImage(turtle, bX, bY);
+  
+          bY += gravity;
+          ctx.fillStyle = "#000";
+          ctx.font = "20px Verdana";
+          ctx.fillText("Score: " + score, 10, canvas.height - 20);
+  
+          if (!gameOverScreen) {
+              requestAnimationFrame(draw);
+          }
+      }
+  
+      // Draw the game over screen
+      function gameOver() {
+          ctx.fillStyle = "#000";
+          ctx.font = "40px Verdana";
+          ctx.fillText("Score: " + score, canvas.width / 2 - 50, canvas.height / 2 - 50);
+          gameOverScreen = true;
+      }
+  
+      draw();
+  </script>
+  
+</body>
+
+</html>
