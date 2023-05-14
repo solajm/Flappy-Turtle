@@ -72,15 +72,22 @@
   
       var gameOverScreen = false; // Track game over state
   
-      // Handle key presses
-      document.addEventListener("keydown", moveUp);
-  
-      function moveUp(event) {
-          if (event.keyCode === 32) {
-              bY -= 25;
-              flySound.play();
-          }
-      }
+     // Handle key presses
+var isSpacebarPressed = false;
+
+document.addEventListener("keydown", function(event) {
+  if (event.keyCode === 32 && !isSpacebarPressed) {
+    bY -= 25;
+    flySound.play();
+    isSpacebarPressed = true;
+  }
+});
+
+document.addEventListener("keyup", function(event) {
+  if (event.keyCode === 32) {
+    isSpacebarPressed = false;
+  }
+});
   
       // Draw the game
       function draw() {
